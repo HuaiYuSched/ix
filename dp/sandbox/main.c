@@ -301,6 +301,18 @@ static int run_app(uintptr_t sp, uintptr_t e_entry)
 	return dune_jump_to_user(&tf);
 }
 
+static int run_kern_app(uintptr_t sp, uintptr_t e_entry)
+{
+	struct dune_tf tf;
+
+	memset(&tf, 0, sizeof(struct dune_tf));
+	tf.rip = e_entry;
+	tf.rsp = sp;
+	tf.rflags = 0x0;
+
+	return dune_stay_kern(&tf);
+}
+
 extern char **environ;
 
 int sandbox_init(int argc, char *argv[])
@@ -308,6 +320,7 @@ int sandbox_init(int argc, char *argv[])
 	int ret;
 	uintptr_t sp;
 	struct elf_data data;
+	int cs;
 
 	if (argc < 1)
 		return -EINVAL;
@@ -322,6 +335,8 @@ int sandbox_init(int argc, char *argv[])
 	log_debug("sandbox: entry addr is %lx\n", data.entry);
 
 	dune_set_user_fs(0); // default starting fs
+	log_debug("sandbox: user fs is %lx\n",dune_get_user_fs());
+	log_debug("sandbox: kern fs is %lx\n",dune_get_kern_fs());
 
 	ret = trap_init();
 	if (ret) {
@@ -341,6 +356,8 @@ int sandbox_init(int argc, char *argv[])
 		return -EINVAL;
 	}
 
+	asm("movl %%cs, %0": "=r" (cs));
+	log_debug("cs: '%lx'\n", cs);
 	ret = run_app(sp, data.entry);
 
 	return ret;

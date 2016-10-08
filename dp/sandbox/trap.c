@@ -639,7 +639,7 @@ extern void do_syscall(struct dune_tf *tf, uint64_t sysnr);
 
 static void syscall_handler(struct dune_tf *tf)
 {
-//	printf("Syscall No. %d\n", tf->rax);
+	printf("Syscall No. %d\n", tf->rax);
 
 	if (tf->rax >= SYSCALL_START)
 		return do_syscall(tf, tf->rax - SYSCALL_START);

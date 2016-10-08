@@ -67,6 +67,9 @@ static void pp_main_handler(struct ixev_ctx *ctx, unsigned int reason)
 {
 	struct pp_conn *conn = container_of(ctx, struct pp_conn, ctx);
 	ssize_t ret;
+	int cs;
+	asm("\t movl %%cs, %0" : "=r" (cs));
+	printf("echoserver: current cs is %lx\n",cs);
 
 	while (1) {
 		size_t bytes_so_far = msg_size - conn->bytes_left;
@@ -99,6 +102,7 @@ static void pp_main_handler(struct ixev_ctx *ctx, unsigned int reason)
 		}
 
 		conn->bytes_left = msg_size;
+		
 	}
 }
 
